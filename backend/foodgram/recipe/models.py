@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
-
-User = get_user_model()
+from users.models import User
 
 
 class Ingredient(models.Model):
@@ -56,25 +56,31 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        verbose_name=("recipes"),
-        blank=False
+        blank=False,
+        related_name='recipes',
     )
     tag = models.ManyToManyField(
         Tag,
-        verbose_name=("recipes"),
-        blank=False
+        blank=False,
+        related_name='recipes'
     )
     pub_date = models.DateTimeField(
         "date published",
         auto_now_add=True
     )
-
+    cooking_time = models.PositiveSmallIntegerField(
+       validators=[MinValueValidator(
+           1,
+           'минимальное время приготовления 1 минута'
+       )]
+    )
 
     class Meta:
         ordering = ["-pub_date"]
 
+
 class IngredientInRecipe(models.Model):
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name='amount'
@@ -82,7 +88,7 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name = 'amount'
+        related_name='ingredient_amount'
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество ингредиента'

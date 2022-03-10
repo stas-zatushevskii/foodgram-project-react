@@ -1,11 +1,15 @@
-from django.views.generic import CreateView
+from api.permissions import IsAdmin
+from djoser.views import UserViewSet
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from django.urls import reverse_lazy
+from .models import User
+from .serializers import CustomUserSerializer
 
-from .forms import CreationForm
 
-
-class SignUp(CreateView):
-    form_class = CreationForm
-    success_url = reverse_lazy('recipe:index')
-    template_name = 'users/signup.html'  
+class CustomUserViewSet(UserViewSet):
+    queryset = User.objects.all()
+    lookup_field = 'username'
+    permission_classes = (IsAuthenticated, IsAdmin,)
+    serializer_class = CustomUserSerializer
+    search_fields = ('username',)
