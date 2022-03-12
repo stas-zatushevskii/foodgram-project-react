@@ -1,8 +1,8 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
-                           Recipe, ShopingCard, Tag, User)
+                           Recipe, ShopingCart, Tag, User)
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -11,8 +11,10 @@ from rest_framework.response import Response
 from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
                                    HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST)
 
+from .utils import obj_create_or_dele, get_ingredients
+
 from .filters import IngredientSearchFilter, TagFavoritShopingFilter
-from .permissions import IsAdminOrReadOnly, IsAdminUserReadOnly
+from .permissions import IsAdminIsOwnerOrReadOnly, IsAdminOrReadOnly
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeListSerializer,
                           TagSerializer)
@@ -44,7 +46,7 @@ class FollowerViewSet(viewsets.ModelViewSet):
                 return Response(status=HTTP_400_BAD_REQUEST)
         if self.action == 'DELETE':
             try:
-                follow = Follow.objects.get(user=user, author=author)
+                follow = get_object_or_404(Follow, author=author)
                 follow.delete()
                 return Response(status=HTTP_200_OK)
             except IntegrityError:
@@ -85,7 +87,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_class = TagFavoritShopingFilter
     pagination_class = PageNumberPagination
-    permission_classes = [IsAdminUserReadOnly]
+    permission_classes = [IsAdminIsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -97,8 +99,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise('Изменение чужого контента запрещено!')
         super(RecipeViewSet, self).perform_update(serializer)
 
     @action(
@@ -108,23 +108,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True)
     def favorite(self, request, pk):
         user = request.user
-        try:
-            recipe = Recipe.objects.get(id=pk)
-        except Recipe.DoesNotExist:
-            return Response(status=HTTP_400_BAD_REQUEST)
-        if self.action == 'POST':
-            try:
-                Favorite.objects.create(user=user, recipe=recipe)
-                return Response(status=HTTP_201_CREATED)
-            except IntegrityError:
-                return Response(status=HTTP_400_BAD_REQUEST)
-        if self.action == 'DELETE':
-            try:
-                favorite = Favorite.objects.get(user=user, recipe=recipe)
-                favorite.delete()
-                return Response(status=HTTP_200_OK)
-            except ObjectDoesNotExist:
-                return Response(status=HTTP_204_NO_CONTENT)
+        model = Favorite
+        return obj_create_or_dele(model=model, user=user, pk=pk)
 
     @action(
         methods=['POST', 'DELETE'],
@@ -133,25 +118,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True)
     def shopping_cart(self, request, pk):
         user = request.user
-        try:
-            recipe = Recipe.objects.get(id=pk)
-        except Recipe.DoesNotExist:
-            return Response(status=HTTP_400_BAD_REQUEST)
-        if self.action == 'POST':
-            try:
-                ShopingCard.objects.create(user=user, id=pk)
-                return Response(status=HTTP_201_CREATED)
-            except Recipe.DoesNotExist:
-                return Response(status=HTTP_400_BAD_REQUEST)
-        if self.action == 'DELETE':
-            try:
-                recipe_in_list = ShopingCard.objects.get(
-                    user=user, recipe=recipe
-                )
-                recipe_in_list.delete()
-                return Response(status=HTTP_200_OK)
-            except ObjectDoesNotExist:
-                return Response(status=HTTP_204_NO_CONTENT)
+        model = ShopingCart
+        return obj_create_or_dele(model=model, user=user, pk=pk)
 
     @action(
         methods=['GET'],
@@ -160,33 +128,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         name='download_shopping_cart',)
     def download_shopping_cart(self, request):
         user = request.user
-        user_list = user.card.all()
-        need_to_buy = get_ingredients(user_list)
+        recipes_list = user.cart.all()
+        need_to_buy = get_ingredients(recipes_list)
         return download_file_response(need_to_buy, 'need_to_buy.txt')
-
-
-def get_ingredients(recipes_list):
-    ingredients_dict = {}
-    for recipe in recipes_list:
-        ingredients = IngredientInRecipe.objects.filter(recipe=recipe.recipe)
-        for ingredient in ingredients:
-            amount = ingredient.amount
-            name = ingredient.ingredients.name
-            measurement_unit = ingredient.ingredients.measurement_unit
-            if name not in ingredients_dict:
-                ingredients_dict[name] = {
-                    'measurement_unit': measurement_unit,
-                    'amount': amount
-                    }
-            else:
-                ingredients_dict[name]['amount'] += amount
-    need_to_buy = []
-    for item in ingredients_dict:
-        need_to_buy.append(
-            f'{item} - {ingredients_dict[item]["amount"]}',
-            f'{ingredients_dict[item]["measurement_unit"]} \n'
-        )
-    return need_to_buy
 
 
 def download_file_response(list_to_download, filename):

@@ -1,14 +1,14 @@
-from django.contrib.auth import authenticate
+from xml.dom import ValidationErr
+
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
-                           Recipe, ShopingCard, Tag)
+                           Recipe, ShopingCart, Tag)
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ListField
 from users.serializers import UserSerializer
-
-# 1 Всё про ингредиенты
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -17,16 +17,10 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
 
 
-# 2 Всё про теги
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'color', 'slug', 'recipes')
         model = Tag
-
-
-# 3 Всё про рецепты
 
 
 class RecipeIngredientReadSerializer(serializers.ModelSerializer):
@@ -69,7 +63,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         id = validate_data['id']
         recipe = get_object_or_404(Recipe, id=id)
-        answer = ShopingCard.objects.filter(recipe=recipe, user=user).exists()
+        answer = ShopingCart.objects.filter(recipe=recipe, user=user).exists()
         instance.is_in_shopping_cart.add(answer)
         return instance
 
@@ -86,6 +80,34 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'text', 'tag', 'ingredients', 'cooking_time'
         )
         model = Recipe
+
+    def validate(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        unique_ingredients = set()
+        cooking_time = self.initial_data.get('cooking_time')
+        for ingredient in ingredients:
+            id = ingredient.get('id')
+            if type(ingredient.get('amount')) == str:
+                raise ValidationError(
+                    'Не правельный формат количества ингредиентов, ожидаеться int'
+                )
+            if ingredient.get('amount') <= 0:
+                raise ValidationError(
+                    'Количество ингредиента должно быть больше 0'
+                )
+            if id in unique_ingredients:
+                raise ValidationError(
+                    'Ингредиент не должен повторяться'
+                )
+            unique_ingredients.add(id)
+        if cooking_time <= 0:
+            raise ValidationError(
+                'Время готовки должно быть больше 0'
+            )
+        data['ingredients'] = ingredients
+        data['cooking_time'] = cooking_time
+        return data
+            
 
     def tag_ingredient_add(self, instance, **validated_data):
         tags = validated_data['tag']
@@ -114,17 +136,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return self.tag_ingredient_add(recipe, Ingredients=ingredient, tag=tag)
 
     def update(self, instance, validated_data):
-        instance.author = validated_data.get('author', instance.author)
-        instance.name = validated_data.get('name', instance.name)
-        instance.image = validated_data.get(
-            'image', instance.image
-        )
-        instance.ingredients = validated_data.get(
-            'ingredients', instance.ingredients
-        )
-        instance.tag = validated_data.get('tag', instance.tag)
-        instance.save()
-        return instance
+        ingredient = validated_data.get('ingredients')
+        tag = validated_data.get('tag')
+        instance = self.tag_ingredient_add(instance, Ingredients=ingredient, tag=tag)
+        return super().update(instance, validated_data)
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
@@ -134,10 +149,9 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
-# 5 Всё про шопинг кард
 
 
-class ShopingCardSerializer(serializers.ModelSerializer):
+class ShopingCartSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     name = serializers.ReadOnlyField()
     image = serializers.ReadOnlyField()
@@ -145,10 +159,7 @@ class ShopingCardSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'image', 'cooking_time')
-        model = ShopingCard
-
-
-# 4 Всё про подписки
+        model = ShopingCart
 
 
 class FollowSerializer(serializers.ModelSerializer):
