@@ -2,6 +2,7 @@ from django.db.models import CharField, EmailField
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
 from users.models import User
 
 

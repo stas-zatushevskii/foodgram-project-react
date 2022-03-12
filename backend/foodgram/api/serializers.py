@@ -3,11 +3,12 @@ from xml.dom import ValidationErr
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
-from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
-                           Recipe, ShopingCart, Tag)
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ListField
+
+from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
+                           Recipe, ShopingCart, Tag)
 from users.serializers import UserSerializer
 
 
