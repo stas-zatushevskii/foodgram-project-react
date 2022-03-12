@@ -90,7 +90,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             id = ingredient.get('id')
             if type(ingredient.get('amount')) == str:
                 raise ValidationError(
-                    'Не правельный формат количества ингредиентов, ожидаеться int'
+                    'Не правельный формат количества ингредиентов, '
+                    'ожидаеться int'
                 )
             if ingredient.get('amount') <= 0:
                 raise ValidationError(
@@ -108,7 +109,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         data['ingredients'] = ingredients
         data['cooking_time'] = cooking_time
         return data
-            
 
     def tag_ingredient_add(self, instance, **validated_data):
         tags = validated_data['tag']
@@ -139,7 +139,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredient = validated_data.get('ingredients')
         tag = validated_data.get('tag')
-        instance = self.tag_ingredient_add(instance, Ingredients=ingredient, tag=tag)
+        instance = self.tag_ingredient_add(
+            instance, Ingredients=ingredient, tag=tag
+        )
         return super().update(instance, validated_data)
 
 
@@ -149,7 +151,6 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
-
 
 
 class ShopingCartSerializer(serializers.ModelSerializer):
