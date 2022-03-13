@@ -1,23 +1,22 @@
 from django.db import IntegrityError
-from django.http import HttpResponse
+
 from django.shortcuts import get_object_or_404
+from recipe.models import (Favorite, Follow, Ingredient,
+                           Recipe, ShopingCart, Tag, User)
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
-                                   HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST)
-
-from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
-                           Recipe, ShopingCart, Tag, User)
+                                   HTTP_400_BAD_REQUEST)
 
 from .filters import IngredientSearchFilter, TagFavoritShopingFilter
 from .permissions import IsAdminIsOwnerOrReadOnly, IsAdminOrReadOnly
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeListSerializer,
                           TagSerializer)
-from .utils import get_ingredients, obj_create_or_dele
+from .utils import download_file_response, get_ingredients, obj_create_or_dele
 
 
 class FollowerViewSet(viewsets.ModelViewSet):
@@ -131,9 +130,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipes_list = user.cart.all()
         need_to_buy = get_ingredients(recipes_list)
         return download_file_response(need_to_buy, 'need_to_buy.txt')
-
-
-def download_file_response(list_to_download, filename):
-    response = HttpResponse(list_to_download, 'Content-Type: text/plain')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response

@@ -1,5 +1,3 @@
-from xml.dom import ValidationErr
-
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
@@ -83,11 +81,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
 
     def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
+        ingredients = self.data['ingredients']
         unique_ingredients = set()
-        cooking_time = self.initial_data.get('cooking_time')
+        cooking_time = self.data['cooking_time']
         for ingredient in ingredients:
-            id = ingredient.get('id')
             if type(ingredient.get('amount')) == str:
                 raise ValidationError(
                     'Не правельный формат количества ингредиентов, '
@@ -97,11 +94,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise ValidationError(
                     'Количество ингредиента должно быть больше 0'
                 )
-            if id in unique_ingredients:
+            if ingredient.id in unique_ingredients:
                 raise ValidationError(
                     'Ингредиент не должен повторяться'
                 )
-            unique_ingredients.add(id)
+            unique_ingredients.add(ingredient.id)
         if cooking_time <= 0:
             raise ValidationError(
                 'Время готовки должно быть больше 0'
