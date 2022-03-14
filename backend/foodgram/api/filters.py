@@ -1,9 +1,8 @@
 from django_filters import AllValuesMultipleFilter
 from django_filters import rest_framework as filters
 from django_filters.widgets import BooleanWidget
-from rest_framework.filters import SearchFilter
-
 from recipe.models import Recipe
+from rest_framework.filters import SearchFilter
 
 
 class TagFavoritShopingFilter(filters.FilterSet):

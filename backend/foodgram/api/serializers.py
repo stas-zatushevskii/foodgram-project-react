@@ -1,12 +1,11 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
+from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
+                           Recipe, ShopingCart, Tag)
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ListField
-
-from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
-                           Recipe, ShopingCart, Tag)
 from users.serializers import UserSerializer
 
 
@@ -81,14 +80,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
 
     def validate(self, data):
-        ingredients = self.data['ingredients']
+        ingredients = data['ingredients']
         unique_ingredients = set()
-        cooking_time = self.data['cooking_time']
+        cooking_time = data['cooking_time']
         for ingredient in ingredients:
             if type(ingredient.get('amount')) == str:
                 raise ValidationError(
-                    'Не правельный формат количества ингредиентов, '
-                    'ожидаеться int'
+                    'Неправильный формат количества ингредиентов, '
+                    'ожидается int'
                 )
             if ingredient.get('amount') <= 0:
                 raise ValidationError(

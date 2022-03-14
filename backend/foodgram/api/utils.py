@@ -2,11 +2,10 @@ from django.db import IntegrityError
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from recipe.models import IngredientInRecipe, Recipe
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST)
-
-from recipe.models import IngredientInRecipe, Recipe
 
 
 def obj_create_or_dele(self, model, user, pk):
