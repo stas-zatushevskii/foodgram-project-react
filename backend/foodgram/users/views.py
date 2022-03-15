@@ -1,7 +1,7 @@
-from api.permissions import IsAdmin
 from djoser.views import UserViewSet
 from rest_framework.permissions import IsAuthenticated
 
+from api.permissions import IsAdmin
 from .models import User
 from .serializers import CustomUserSerializer
 
