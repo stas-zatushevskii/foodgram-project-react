@@ -51,6 +51,8 @@ jobs:
               echo DB_PORT=${{ secrets.DB_PORT }} >> .env
               sudo docker-compose stop
               sudo docker-compose rm -f
+              sudo docker-compose down --rmi all
+              sudo docker-compose down -v
               sudo docker-compose up -d 
   send_message:
       runs-on: ubuntu-latest
