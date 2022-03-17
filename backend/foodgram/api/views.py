@@ -66,11 +66,7 @@ class FollowerViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-    def list(self, request):
-        tag = Tag.objects.all()
-        serializer = self.get_serializer(tag, many=True)
-        return Response(serializer.data)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
