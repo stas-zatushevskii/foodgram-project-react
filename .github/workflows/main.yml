@@ -38,7 +38,7 @@ jobs:
             passphrase: ${{ secrets.PASSPHRASE }}
             script: |
               sudo systemctl enable --now docker
-              sudo git clone https://github.com/stas-zatushevskii/foodgram-project-react
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -o /usr/local/bin/socker-compose
               sudo chmod +x /usr/local/bin/docker-compose
               sudo rm -rf foodgram-project-react
               git clone https://${{ secrets.GIT_USER }}:${{ secrets.GIT_TOKEN }}@github.com/${{ secrets.GIT_USER }}/foodgram-project-react.git
