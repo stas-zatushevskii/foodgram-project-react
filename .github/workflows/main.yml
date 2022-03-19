@@ -31,7 +31,7 @@ jobs:
       steps:
         - name: executing remote ssh commands to deploy
           uses: appleboy/ssh-action@master
-          with:
+          with: 
             host: ${{ secrets.HOST }}
             username: ${{ secrets.USER }}
             key: ${{ secrets.SSH_KEY }}
