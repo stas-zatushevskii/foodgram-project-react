@@ -1,36 +1,27 @@
 version: '3.3'
 services:
-
   db:
     image: postgres:13.0-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - /var/lib/postgresql/data/
     env_file:
-      - ../infra/.env
-
-  backend:
-    image: staszatshevskii/backend:latest
-    build:
-      context: ../backend/foodgram/
-      dockerfile: Dockerfile
-    volumes:
-      - static_value:/app/static/
-      - media_value:/app/media/
-    depends_on:
-    - db
-    env_file:
-      - ../infra/.env
-
+      - ./.env
   frontend:
-    image: staszatshevskii/frontend:latest
     build:
       context: ../frontend
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
+  backend:
+    image: staszatshevskii/backend:latest
+    restart: always
+    volumes:
+      - static_value:/app/staticfiles/
+      - media_value:/app/media/
     depends_on:
-    - backend
-
+      - db
+    env_file:
+      - ./.env
   nginx:
     image: nginx:1.19.3
     ports:
@@ -43,9 +34,8 @@ services:
       - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
       - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
     depends_on:
-    - frontend
-
+      - backend
+      - frontend
 volumes:
-  static_value: 
+  static_value:
   media_value:
-  postgres_data:

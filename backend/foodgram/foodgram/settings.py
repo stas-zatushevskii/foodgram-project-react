@@ -8,7 +8,7 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'n)j_56zwj0ni_c2e&l+q$24sr-ff)u_rkqi2)dwu_f$_arcag1'
 
 DEBUG = True
 
@@ -64,9 +64,9 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'foodgram_project',
-        'USER': 'foodgram_project_user',
-        'PASSWORD': '123321',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'db',
         'PORT': '5432'
     }
