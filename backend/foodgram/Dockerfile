@@ -1,11 +1,16 @@
-FROM python:3.7-slim
+FROM python:3.7.4-buster
 
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip3 install -r ./requirements.txt --no-cache-dir
+RUN apt update && \
+    apt upgrade -y && \
+    python -m pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install gunicorn==20.0.4
 
-COPY ./ ./
+COPY . .
 
-CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0:8000" ] 
+CMD ["gunicorn", "foodgram.wsgi", "-b", "0.0.0.0:8000"]
+
