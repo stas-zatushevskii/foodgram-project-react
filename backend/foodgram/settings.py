@@ -23,12 +23,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_filters',
+    'corsheaders',
     'api',
     'recipe',
     'users',
     'djoser',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,17 +64,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 
-DATABASES = {
+DDATABASES = {
     'default': {
         'ENGINE': os.getenv(
-            'DB_ENGINE'),
+            'DB_ENGINE', default='django.db.backends.postgresql'),
         'NAME': os.getenv(
-            'DB_NAME'),
+            'DB_NAME', default='postgres'),
         'USER': os.getenv(
-            'POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT')
+            'POSTGRES_USER', default='postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
 
@@ -90,17 +93,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly', 
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,
 }
 
 
@@ -120,12 +123,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
 
-AUTH_USER_MODEL = 'users.User'
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$'
 
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
    'AUTH_HEADER_TYPES': ('Bearer',),
-}
+} 
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
@@ -136,7 +141,7 @@ DJOSER = {
         'current_user': 'users.serializers.CustomUserSerializer',
     },
     'PERMISSIONS': {
-        'user': ('rest_framework.permissions.IsAuthenticated',),
+        "user": ["rest_framework.permissions.AllowAny"],
         'user_list': ('rest_framework.permissions.AllowAny',)
     }
 }

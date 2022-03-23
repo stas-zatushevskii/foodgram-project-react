@@ -2,10 +2,11 @@ from django.db.models import CharField, EmailField
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.contrib.auth import get_user_model
 
-from users.models import User
 from recipe.models import Follow
 
+User = get_user_model()
 
 class CustomUserSerializer(UserSerializer):
     email = EmailField(
@@ -20,7 +21,7 @@ class CustomUserSerializer(UserSerializer):
     class Meta:
         fields = (
             'username', 'email', 'first_name',
-            'last_name', 'role', 'is_subscribed',
+            'last_name', 'is_subscribed',
         )
         model = User
 

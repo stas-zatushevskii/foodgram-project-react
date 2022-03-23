@@ -1,11 +1,10 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ListField
 
-from users.serializers import UserSerializer
+from users.serializers import CustomUserSerializer
 from recipe.models import (Favorite, Follow, Ingredient, IngredientInRecipe,
                            Recipe, ShopingCart, Tag)
 
@@ -30,7 +29,7 @@ class RecipeIngredientReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-    author = UserSerializer
+    author = CustomUserSerializer
     ingredients = RecipeIngredientReadSerializer(many=True)
     tag = ListField(
         child=SlugRelatedField(

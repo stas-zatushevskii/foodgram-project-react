@@ -9,14 +9,16 @@ from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
                                    HTTP_400_BAD_REQUEST)
 
 from recipe.models import (Favorite, Follow, Ingredient, Recipe, ShopingCart,
-                           Tag, User)
+                           Tag)
 from .filters import IngredientSearchFilter, TagFavoritShopingFilter
 from .permissions import IsAdminIsOwnerOrReadOnly, IsAdminOrReadOnly
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeListSerializer,
                           TagSerializer)
 from .utils import download_file_response, get_ingredients, obj_create_or_dele
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class FollowerViewSet(viewsets.ModelViewSet):
     serializer_class = FollowSerializer
