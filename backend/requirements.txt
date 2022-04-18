@@ -18,3 +18,4 @@ requests==2.26.0
 urllib3==1.26.7
 djoser==2.1.0
 django-cors-headers==3.11.0
+drf-extra-fields==3.4.0
