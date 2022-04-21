@@ -10,13 +10,25 @@ from recipe.models import IngredientInRecipe, Recipe
 from .serializers import ShortRecipeSerializer
 
 def get_ingredients(recipes_list):
-    ingredient_list = (
-        IngredientInRecipe.objects.filter(recipe__id__in=recipes_list)
-        .values("ingredients__name", "ingredients__measurement_unit")
-        .annotate(amountsum=Sum("amount"))
-    )
-    need_to_buy = {"ingredients": ingredient_list}
-    return need_to_buy
+    ingredients_dict = {}
+    for recipe in recipes_list:
+        ingredients = IngredientInRecipe.objects.filter(recipe=recipe.recipe)
+        for ingredient in ingredients:
+            amount = ingredient.amount
+            name = ingredient.ingredients.name
+            measurement_unit = ingredient.ingredients.measurement_unit
+            if name not in ingredients_dict:
+                ingredients_dict[name] = {
+                    'measurement_unit': measurement_unit,
+                    'amount': amount
+                    }
+            else:
+                ingredients_dict[name]['amount'] += amount
+    to_buy = []
+    for item in ingredients_dict:
+        to_buy.append(f'{item} - {ingredients_dict[item]["amount"]} '
+                      f'{ingredients_dict[item]["measurement_unit"]} \n')
+    return to_buy
 
 def download_file_response(list_to_download, filename):
     response = HttpResponse(list_to_download, 'Content-Type: text/plain')

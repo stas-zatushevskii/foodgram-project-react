@@ -1,14 +1,13 @@
-from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.db.models import BooleanField, Exists, OuterRef, Value
+from django.contrib.auth import get_user_model
 from djoser.views import UserViewSet
-from rest_framework import filters, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
-                                   HTTP_400_BAD_REQUEST)
+from rest_framework.status import (HTTP_201_CREATED, HTTP_400_BAD_REQUEST,
+                                HTTP_201_CREATED, HTTP_204_NO_CONTENT)
 
 from recipe.models import (Favorite, Follow, Ingredient, Recipe, ShopingCart,
                            Tag)
@@ -16,12 +15,9 @@ from .filters import IngredientSearchFilter, TagFavoritShopingFilter
 from .permissions import IsAdminIsOwnerOrReadOnly, IsAdminOrReadOnly
 from .serializers import (FollowSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeListSerializer,
-                          TagSerializer, ShortRecipeSerializer)
+                          TagSerializer)
 from .pagination import LimitPageNumberPagination
 from .utils import download_file_response, get_ingredients, obj_create, obj_delete
-from django.contrib.auth import get_user_model
-from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
-                                   HTTP_400_BAD_REQUEST)
 
 
 User = get_user_model()
@@ -82,8 +78,7 @@ class FollowViewSet(UserViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [AllowAny]
-    pagination_class = None
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -95,7 +90,7 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all().order_by('-id')
+    queryset = Recipe.objects.all()
     filter_class = TagFavoritShopingFilter
     pagination_class = LimitPageNumberPagination
     permission_classes = [IsAdminIsOwnerOrReadOnly]
@@ -127,9 +122,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 is_in_shopping_cart=Value(False, output_field=BooleanField())
             )
         return queryset
-
-    def perform_update(self, serializer):
-        super(RecipeViewSet, self).perform_update(serializer)
 
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthenticated])

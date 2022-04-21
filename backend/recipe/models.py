@@ -16,7 +16,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        ordering = ('name',)
+        ordering = ['name']
         verbose_name = 'ингредиент'
 
     def __str__(self):
@@ -43,14 +43,15 @@ class Tag(models.Model):
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return f'{self.name}'
 
 
 class Recipe(models.Model):
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         verbose_name='автор',
         related_name='recipes',
     )
@@ -68,10 +69,11 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
+        through='recipe.IngredientInRecipe',
         related_name='recipes',
         verbose_name='ингредиент'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         related_name='recipes',
         verbose_name='тег'
@@ -93,8 +95,8 @@ class Recipe(models.Model):
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return f'{self.name}'
 
 
 class IngredientInRecipe(models.Model):
@@ -107,11 +109,15 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_amount',
+        related_name='ingredient',
         verbose_name='рецепт'
     )
-    amount = models.PositiveIntegerField(
-        verbose_name='Количество ингредиента',
+    amount = models.PositiveSmallIntegerField(
+        default=1,
+        validators=(
+            MinValueValidator(
+                1, message='Минимальное количество ингридиентов 1'),),
+        verbose_name='Количество',
     )
 
     class Meta:
@@ -124,8 +130,8 @@ class IngredientInRecipe(models.Model):
             )
         ]
 
-    def __str__(self):
-        return 'Ингредиент в рецепте'
+    def __str__(self) -> str:
+        return f'{self.ingredients.name} - {self.amount}'
 
 
 class Follow(models.Model):
@@ -158,7 +164,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorite',
+        related_name='favorites',
         verbose_name='пользователь'
     )
     recipe = models.ForeignKey(
@@ -176,6 +182,9 @@ class Favorite(models.Model):
             models.UniqueConstraint(fields=['user', 'recipe'],
                                     name='unique_user_recipe')
         ]
+
+    def __str__(self):
+        return f'{self.user}'
 
 
 class ShopingCart(models.Model):

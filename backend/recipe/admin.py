@@ -18,7 +18,7 @@ class IngredientAdmin(ModelAdmin):
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
     list_display = ('name', 'author')
-    list_filter = ('author', 'name', 'tag')
+    list_filter = ('author', 'name', 'tags')
     readonly_fields = ('count_favorites',)
 
     def count_favorites(self, obj):

@@ -8,16 +8,13 @@ from recipe.models import Recipe
 
 class TagFavoritShopingFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(widget=BooleanWidget())
-    favorites = filters.BooleanFilter(widget=BooleanWidget())
-    tag = AllValuesMultipleFilter(field_name='tag__slug')
-    author = AllValuesMultipleFilter(field_name='author__id')
+    is_favorited = filters.BooleanFilter(widget=BooleanWidget())
+    tags = AllValuesMultipleFilter(field_name="tags__slug")
+    author = AllValuesMultipleFilter(field_name="author__id")
 
     class Meta:
         model = Recipe
-        fields = [
-            'author__id', 'tag__slug',
-            'favorites', 'is_in_shopping_cart'
-        ]
+        fields = ["author__id", "tags__slug", "is_favorited", "is_in_shopping_cart"]
 
 
 class IngredientSearchFilter(SearchFilter):
