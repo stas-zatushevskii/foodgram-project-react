@@ -1,7 +1,5 @@
 import json
 
-from . import models
-
 from models import Ingredient
 
 from django.db import transaction
