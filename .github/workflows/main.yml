@@ -36,25 +36,6 @@ jobs:
             username: ${{ secrets.USER }}
             key: ${{ secrets.SSH_KEY }}
             passphrase: ${{ secrets.PASSPHRASE }}
-            script: |
-              sudo systemctl enable --now docker
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64" -o /usr/local/bin/socker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-              sudo rm -rf foodgram-project-react
-              git clone https://${{ secrets.GIT_USER }}:${{ secrets.GIT_TOKEN }}@github.com/${{ secrets.GIT_USER }}/foodgram-project-react.git
-              cd foodgram-project-react/infra
-              echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-              echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-              echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-              echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-              echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-              echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-              sudo docker-compose stop
-              sudo docker-compose rm -f
-              sudo docker-compose down --rmi all
-              sudo docker-compose down -v
-              sudo killall nginx
-              sudo docker-compose up -d
   send_message:
       runs-on: ubuntu-latest
       needs: deploy
